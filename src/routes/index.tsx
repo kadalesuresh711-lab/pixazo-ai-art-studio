@@ -766,6 +766,7 @@ function Index() {
                 },
                 signal,
               }),
+              IMAGE_REQUEST_DEADLINE_MS,
             );
             await Promise.all(
               results.map(async (r) => {
@@ -795,6 +796,7 @@ function Index() {
                           },
                           signal,
                         }),
+                        IMAGE_REQUEST_DEADLINE_MS,
                       );
                       url = res.url;
                     } catch {
@@ -941,6 +943,7 @@ function Index() {
               },
               signal,
             }),
+            IMAGE_REQUEST_DEADLINE_MS,
           );
           const url = res.url;
           if (url && (!CLIENT_BLANK_CHECK || !(await isBlankImageUrl(url)))) {
