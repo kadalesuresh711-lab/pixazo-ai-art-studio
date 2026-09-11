@@ -21,8 +21,8 @@ const Input = z
       .max(10_000),
     runAt: z.number().optional(),
   })
-  .refine((value) => value.to >= value.from && value.to - value.from < 60, {
-    message: "Prompt range must contain 1 to 60 lines",
+  .refine((value) => value.to >= value.from && value.to - value.from < 120, {
+    message: "Prompt range must contain 1 to 120 lines",
   });
 
 export const Route = createFileRoute("/api/prompts")({

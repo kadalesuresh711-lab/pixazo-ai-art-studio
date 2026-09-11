@@ -106,7 +106,7 @@ const SAMPLE = `(0:00)Henan की कहानी असुरा का उद
  * panels. Server calls therefore allow long, high-output requests instead of
  * splitting work into small batches.
  */
-const PROMPT_RANGE = 60;
+const PROMPT_RANGE = 120;
 
 /**
  * Image pipeline shape: TEN Pixazo keys, THREE images per key at a time.
@@ -552,7 +552,7 @@ function Index() {
       // because the text engine uses a single key at a time.
       // Stage 2 drains a shared queue as soon as prompts land. Prompt requests
       // use a heartbeat stream, so the published connection stays active while
-      // Agnes writes each full 60-line answer.
+      // Agnes writes each full 120-line answer.
       const needPrompts = pending.filter((s) => !hasPrompt(s.prompt));
       const ranges: { from: number; to: number }[] = [];
       for (let i = 0; i < needPrompts.length; i += PROMPT_RANGE) {
