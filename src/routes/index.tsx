@@ -112,11 +112,11 @@ const PROMPT_RANGE = 60;
  * Image pipeline shape: TEN Pixazo keys, THREE images per key at a time.
  *
  * Each lane sends IMAGE_BATCH prompts in one round trip and the server renders
- * them concurrently, spreading them across the key pool. With ten lanes of three
- * prompts, up to thirty pictures are drawn in parallel.
+ * them concurrently, spreading them across the key pool. With 24 lanes of four
+ * prompts, up to 96 pictures are drawn in parallel.
  */
-const IMAGE_CONCURRENCY = 10;
-const IMAGE_BATCH = 3;
+const IMAGE_CONCURRENCY = 24;
+const IMAGE_BATCH = 4;
 /**
  * The server already downloads and validates every finished image (complete
  * file + entropy) before returning its URL, so re-downloading and decoding it

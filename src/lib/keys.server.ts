@@ -41,8 +41,8 @@ export function pickKey(keys: string[], slot: number, attempt = 0): string {
 /* Ten images per key at a time                                        */
 /* ------------------------------------------------------------------ */
 
-/** How many images one key may render simultaneously (3 per key -> 30 total). */
-export const PER_KEY_CONCURRENCY = 3;
+/** How many images one key may render simultaneously (10 per key -> 100 total). */
+export const PER_KEY_CONCURRENCY = 10;
 
 /** In-flight renders per key. */
 const inFlight = new Map<string, number>();
@@ -69,7 +69,7 @@ function takeFree(keys: string[], slot: number, attempt: number): string | undef
 /**
  * Leases capacity on an image key for the duration of `fn`. Each key handles up
  * to PER_KEY_CONCURRENCY renders at once, so with ten keys configured up to
- * thirty images are generated in parallel; anything beyond that waits.
+ * one hundred images are generated in parallel; anything beyond that waits.
  */
 export async function withImageKey<T>(
   slot: number,
