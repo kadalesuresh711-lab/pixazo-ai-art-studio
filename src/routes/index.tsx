@@ -195,15 +195,31 @@ function stamp(): { runAt?: number } {
  * click hangs up on the server too — the API keys are dropped mid-job instead
  * of finishing work nobody is waiting for.
  */
-async function killable<T>(run: (signal: AbortSignal) => Promise<T>): Promise<T> {
+async function killable<T>(
+  run: (signal: AbortSignal) => Promise<T>,
+  /** Hard deadline: a request that never answers is dropped and retried. */
+  timeoutMs?: number,
+): Promise<T> {
   const controller = new AbortController();
   const untrack = trackRequest(controller);
+  const timer = timeoutMs
+    ? window.setTimeout(() => controller.abort("request timed out"), timeoutMs)
+    : undefined;
   try {
     return await run(controller.signal);
   } finally {
+    if (timer) window.clearTimeout(timer);
     untrack();
   }
 }
+
+/**
+ * A drawing round trip is never allowed to hang the lane forever. The server
+ * retries a panel up to six times at 60s each, so anything past this ceiling is
+ * a stuck request: the batch fails, the panels go back on the queue and another
+ * lane picks them up instead of the run freezing midway.
+ */
+const IMAGE_REQUEST_DEADLINE_MS = 8 * 60_000;
 
 async function getPrompts(input: PromptRequest): Promise<{ prompts: string[] }> {
   const label = `${input.from}-${input.to}`;
@@ -750,6 +766,7 @@ function Index() {
                 },
                 signal,
               }),
+              IMAGE_REQUEST_DEADLINE_MS,
             );
             await Promise.all(
               results.map(async (r) => {
@@ -779,6 +796,7 @@ function Index() {
                           },
                           signal,
                         }),
+                        IMAGE_REQUEST_DEADLINE_MS,
                       );
                       url = res.url;
                     } catch {
@@ -925,6 +943,7 @@ function Index() {
               },
               signal,
             }),
+            IMAGE_REQUEST_DEADLINE_MS,
           );
           const url = res.url;
           if (url && (!CLIENT_BLANK_CHECK || !(await isBlankImageUrl(url)))) {
