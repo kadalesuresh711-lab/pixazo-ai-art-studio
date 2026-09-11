@@ -79,7 +79,21 @@ export async function withImageKey<T>(
   const keys = pixazoKeys();
   let key = takeFree(keys, slot, attempt);
   while (!key) {
-    await new Promise<void>((resolve) => waiters.push(resolve));
+    // Waiting must never be able to sleep forever: every release wakes ALL
+    // waiters, and each wait also times out on its own. A lost wake-up used to
+    // leave a long script's last panels queued behind capacity that had already
+    // been given back — the run looked frozen midway.
+    await new Promise<void>((resolve) => {
+      let done = false;
+      const wake = () => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        resolve();
+      };
+      const timer = setTimeout(wake, 250);
+      waiters.push(wake);
+    });
     key = takeFree(keys, slot, attempt);
   }
   inFlight.set(key, load(key) + 1);
@@ -87,6 +101,7 @@ export async function withImageKey<T>(
     return await fn(key, keys.indexOf(key));
   } finally {
     inFlight.set(key, Math.max(0, load(key) - 1));
-    waiters.shift()?.();
+    const woken = waiters.splice(0, waiters.length);
+    for (const w of woken) w();
   }
 }
